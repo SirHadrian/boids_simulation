@@ -10,6 +10,9 @@ const camera: THREE.PerspectiveCamera = new THREE.PerspectiveCamera(
   0.1,
   1000,
 );
+const backgroundLoader = new THREE.TextureLoader();
+const texture = backgroundLoader.load('./assets/back.jpg');
+scene.background = texture;
 
 // Renderer
 const renderer: THREE.WebGLRenderer = new THREE.WebGLRenderer({
@@ -26,7 +29,7 @@ camera.position.z = 20;
 
 // Objects
 const sphere: THREE.Mesh = new THREE.Mesh(
-  new THREE.SphereGeometry(5, 50, 50),
+  new THREE.SphereGeometry(1, 10, 10),
   new THREE.MeshStandardMaterial({
     color: 0xffffff,
   })
