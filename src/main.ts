@@ -80,10 +80,11 @@ function main () {
 
   //#region  General Configurations
   const configs = {
-    boidVelocity: 0.5,
+    boidVelocity: 1,
     boidsNumber: 100,
     planeSize: 200,
     lightIntensity: 1,
+    boidSize: 2,
   };
 
   let balls: Mesh[] = [];
@@ -135,7 +136,7 @@ function main () {
 
   for ( let i = 0; i < configs.boidsNumber; ++i ) {
     const sphere: Mesh = new Mesh(
-      new SphereGeometry( 1, 30, 30 ),
+      new SphereGeometry( configs.boidSize, 30, 30 ),
       new MeshStandardMaterial( {
         color: Math.random() * 0xffffff,
       } )
