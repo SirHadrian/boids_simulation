@@ -13,6 +13,7 @@ import {
   MeshStandardMaterial,
   DoubleSide,
   Vector3,
+  Group,
 } from 'three';
 import * as dat from 'dat.gui'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
@@ -87,7 +88,7 @@ function main () {
     boidSize: 2,
   };
 
-  let balls: Mesh[] = [];
+  const balls = new Group();
 
 
 
@@ -147,23 +148,23 @@ function main () {
     sphere.userData.velocity = new Vector3().randomDirection().setZ( 0 );
     sphere.userData.velocity.multiplyScalar( configs.boidVelocity );
 
-    balls.push( sphere );
-    scene.add( sphere );
+    balls.add( sphere );
   }
 
+  scene.add(balls);
 
   const animateBalls = () => {
-    if ( balls.length == 0 ) return;
+    if ( balls.children.length == 0 ) return;
 
-    balls.forEach( ( item ) => item.position.add( item.userData.velocity ) );
+    balls.children.forEach( ( item ) => item.position.add( item.userData.velocity ) );
 
     const negEdge = -1 * ( configs.planeSize / 2 );
     const posEdge = configs.planeSize / 2;
 
     const offset = 2;
 
-    balls.forEach( ( item ) => {
 
+    balls.children.forEach( ( item ) => {
       // x col
       if ( item.position.x < negEdge ) {
         item.position.x += offset;
