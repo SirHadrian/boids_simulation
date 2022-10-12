@@ -13,6 +13,8 @@ import {
   ColorRepresentation,
   SphereGeometry,
   MeshStandardMaterial,
+  DoubleSide,
+  Vector3,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
@@ -38,7 +40,7 @@ class CameraSetup extends PerspectiveCamera {
 
     super( fov, aspectRatio, nearDistance, farDistance );
 
-    this.position.set( 100, 50, -100 );
+    this.position.set( 0, 0, 200 );
   }
 }
 
@@ -103,7 +105,7 @@ function main () {
 
   // Test Objects
   const sphere: THREE.Mesh = new Mesh(
-    new SphereGeometry( 10, 10, 10 ),
+    new SphereGeometry( 1, 30, 30 ),
     new MeshStandardMaterial( {
       color: 0xffffff,
     } )
@@ -111,7 +113,15 @@ function main () {
   scene.add( sphere );
 
 
-
+  const plane = new Mesh(
+    new PlaneGeometry( 100, 100 ),
+    new MeshBasicMaterial( {
+      color: 0xffffff,
+      side: DoubleSide
+    } )
+  );
+  plane.position.set( 0, 0, 0 );
+  scene.add( plane );
 
   //#endregion
 
