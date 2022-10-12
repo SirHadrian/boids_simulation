@@ -1,51 +1,137 @@
-import * as THREE from 'three';
+import {
+  Scene,
+  Plane,
+  PlaneGeometry,
+  Mesh,
+  MeshBasicMaterial,
+  WebGLRenderer,
+  TextureLoader,
+  PerspectiveCamera,
+  sRGBEncoding,
+  Camera,
+  DirectionalLight,
+  ColorRepresentation,
+  SphereGeometry,
+  MeshStandardMaterial,
+} from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 
-// Create scene and camera
-const scene: THREE.Scene = new THREE.Scene();
-const camera: THREE.PerspectiveCamera = new THREE.PerspectiveCamera(
-  75,
-  innerWidth / innerHeight,
-  0.1,
-  1000,
-);
-const backgroundLoader = new THREE.TextureLoader();
-const texture = backgroundLoader.load('./assets/back.jpg');
-scene.background = texture;
 
-// Renderer
-const renderer: THREE.WebGLRenderer = new THREE.WebGLRenderer({
-  antialias: true,
-});
-renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(devicePixelRatio);
-const target = document.getElementById('app');
-target?.appendChild(renderer.domElement);
+class SceneSetup extends Scene {
 
-// Orbit controls / camera position
-new OrbitControls(camera, renderer.domElement);
-camera.position.z = 20;
+  constructor() {
 
-// Objects
-const sphere: THREE.Mesh = new THREE.Mesh(
-  new THREE.SphereGeometry(1, 10, 10),
-  new THREE.MeshStandardMaterial({
-    color: 0xffffff,
-  })
-);
-scene.add(sphere);
+    super();
 
-// Light
-const light: THREE.AmbientLight = new THREE.AmbientLight(
-  0xffffff,
-  1
-);
-scene.add(light);
+    const backgroundLoader = new TextureLoader();
+    const texture = backgroundLoader.load( './assets/back.jpg' );
+    this.background = texture;
+  }
 
-// Main loop
-function animate() {
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
 }
-animate();
+
+
+class CameraSetup extends PerspectiveCamera {
+
+  constructor( fov: number, aspectRatio: number, nearDistance: number, farDistance: number ) {
+
+    super( fov, aspectRatio, nearDistance, farDistance );
+
+    this.position.set( 100, 50, -100 );
+  }
+}
+
+
+class RendererSetup extends WebGLRenderer {
+
+  constructor( configs: object, camera: CameraSetup ) {
+
+    super( configs );
+
+    this.setSize( window.innerWidth, window.innerHeight );
+    this.setPixelRatio( window.devicePixelRatio );
+    this.outputEncoding = sRGBEncoding;
+
+    // Inject renderer to DOM
+    const target = document.getElementById( "app" );
+    target?.appendChild( this.domElement );
+
+    // OrbitControls
+    new OrbitControls( camera, this.domElement );
+  }
+}
+
+class LightSetup extends DirectionalLight {
+
+  constructor( scene: Scene, color: ColorRepresentation, intensity: number ) {
+
+    super( color, intensity );
+
+    this.position.set( 1, 2, -1 );
+    scene.add( this );
+  }
+}
+
+
+function main () {
+
+  //#region INIT
+  // Create Scene
+  const scene = new SceneSetup();
+
+  // Create Camera
+  const camera = new CameraSetup(
+    50, // FOV
+    window.innerWidth / window.innerHeight, // Aspect ratio
+    0.1, // Near: distance objects apear on camera
+    1000, // Far: distance objects disapear from camera
+  );
+
+  // Create Renderer
+  const renderer = new RendererSetup( { antialiasing: true }, camera );
+
+  // Create light source
+  const light = new LightSetup(
+    scene,
+    0xffffff,
+    1
+  );
+  //#endregion
+
+  //#region PlayGround
+
+  // Test Objects
+  const sphere: THREE.Mesh = new Mesh(
+    new SphereGeometry( 10, 10, 10 ),
+    new MeshStandardMaterial( {
+      color: 0xffffff,
+    } )
+  );
+  scene.add( sphere );
+
+
+
+
+  //#endregion
+
+
+  //#region Main loop and events
+  // On window resize
+  const resize = () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+  }
+  window.addEventListener( "resize", resize, false );
+
+  // Animation loop
+  const animate = () => {
+    renderer.render( scene, camera );
+    requestAnimationFrame( animate );
+  }
+  animate();
+  //#endregion
+}
+
+main();
