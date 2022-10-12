@@ -15,6 +15,7 @@ import {
   MeshStandardMaterial,
   DoubleSide,
   Vector3,
+  Vector2,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
@@ -78,6 +79,17 @@ class LightSetup extends DirectionalLight {
 
 function main () {
 
+  // General Configurations
+  const configs = {
+    boidVelocity: 1,
+    boidsNumber: 100,
+    planeSize: 200,
+  };
+
+  let balls: Mesh[] = [];
+
+  //#endregion
+
   //#region INIT
   // Create Scene
   const scene = new SceneSetup();
@@ -104,17 +116,8 @@ function main () {
   //#region PlayGround
 
   // Test Objects
-  const sphere: THREE.Mesh = new Mesh(
-    new SphereGeometry( 1, 30, 30 ),
-    new MeshStandardMaterial( {
-      color: 0xffffff,
-    } )
-  );
-  scene.add( sphere );
-
-
   const plane = new Mesh(
-    new PlaneGeometry( 100, 100 ),
+    new PlaneGeometry( configs.planeSize, configs.planeSize ),
     new MeshBasicMaterial( {
       color: 0xffffff,
       side: DoubleSide
@@ -122,6 +125,61 @@ function main () {
   );
   plane.position.set( 0, 0, 0 );
   scene.add( plane );
+
+
+  const sphere: THREE.Mesh = new Mesh(
+    new SphereGeometry( 1, 30, 30 ),
+    new MeshStandardMaterial( {
+      color: 0xffffff,
+    } )
+  );
+  sphere.position.set( 0, 0, 0 );
+  //scene.add( sphere );
+
+
+
+  for ( let i = 0; i < configs.boidsNumber; ++i ) {
+    const newSphere = sphere.clone();
+    newSphere.userData.velocity = new Vector3().randomDirection().setZ( 0 );
+    newSphere.userData.velocity.multiplyScalar( configs.boidVelocity );
+
+    balls.push( newSphere );
+    scene.add( newSphere );
+  }
+
+
+  const animateBalls = () => {
+    if ( balls.length == 0 ) return;
+
+    balls.forEach( ( item ) => item.position.add( item.userData.velocity ) );
+
+    const negEdge = -1 * ( configs.planeSize / 2 );
+    const posEdge = configs.planeSize / 2;
+
+    const offset = 2;
+
+    balls.forEach( ( item ) => {
+
+      // x col
+      if ( item.position.x < negEdge ) {
+        item.position.x += offset;
+        item.userData.velocity.x *= -1;
+      } else if ( item.position.x > posEdge ) {
+        item.position.x -= offset;
+        item.userData.velocity.x *= -1;
+      }
+
+      // y col
+      if ( item.position.y < negEdge ) {
+        item.position.y += offset;
+        item.userData.velocity.y *= -1;
+      } else if ( item.position.y > posEdge ) {
+        item.position.y -= offset;
+        item.userData.velocity.y *= -1;
+      }
+    } );
+  }
+
 
   //#endregion
 
@@ -137,6 +195,9 @@ function main () {
 
   // Animation loop
   const animate = () => {
+
+    animateBalls();
+
     renderer.render( scene, camera );
     requestAnimationFrame( animate );
   }
