@@ -1,6 +1,5 @@
 import {
   Scene,
-  Plane,
   PlaneGeometry,
   Mesh,
   MeshBasicMaterial,
@@ -8,15 +7,14 @@ import {
   TextureLoader,
   PerspectiveCamera,
   sRGBEncoding,
-  Camera,
   DirectionalLight,
   ColorRepresentation,
   SphereGeometry,
   MeshStandardMaterial,
   DoubleSide,
   Vector3,
-  Vector2,
 } from 'three';
+import * as dat from 'dat.gui'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 
@@ -65,13 +63,14 @@ class RendererSetup extends WebGLRenderer {
   }
 }
 
+
 class LightSetup extends DirectionalLight {
 
   constructor( scene: Scene, color: ColorRepresentation, intensity: number ) {
 
     super( color, intensity );
 
-    this.position.set( 1, 2, -1 );
+    this.position.set( 0, 0, 10 );
     scene.add( this );
   }
 }
@@ -79,14 +78,17 @@ class LightSetup extends DirectionalLight {
 
 function main () {
 
-  // General Configurations
+  //#region  General Configurations
   const configs = {
-    boidVelocity: 1,
+    boidVelocity: 0.5,
     boidsNumber: 100,
     planeSize: 200,
+    lightIntensity: 1,
   };
 
   let balls: Mesh[] = [];
+
+
 
   //#endregion
 
@@ -109,7 +111,7 @@ function main () {
   const light = new LightSetup(
     scene,
     0xffffff,
-    1
+    configs.lightIntensity
   );
   //#endregion
 
@@ -127,24 +129,25 @@ function main () {
   scene.add( plane );
 
 
-  const sphere: THREE.Mesh = new Mesh(
-    new SphereGeometry( 1, 30, 30 ),
-    new MeshStandardMaterial( {
-      color: 0xffffff,
-    } )
-  );
-  sphere.position.set( 0, 0, 0 );
   //scene.add( sphere );
 
 
 
   for ( let i = 0; i < configs.boidsNumber; ++i ) {
-    const newSphere = sphere.clone();
-    newSphere.userData.velocity = new Vector3().randomDirection().setZ( 0 );
-    newSphere.userData.velocity.multiplyScalar( configs.boidVelocity );
+    const sphere: Mesh = new Mesh(
+      new SphereGeometry( 1, 30, 30 ),
+      new MeshStandardMaterial( {
+        color: Math.random() * 0xffffff,
+      } )
+    );
+    sphere.position.set( 0, 0, 0 );
 
-    balls.push( newSphere );
-    scene.add( newSphere );
+
+    sphere.userData.velocity = new Vector3().randomDirection().setZ( 0 );
+    sphere.userData.velocity.multiplyScalar( configs.boidVelocity );
+
+    balls.push( sphere );
+    scene.add( sphere );
   }
 
 
@@ -183,6 +186,13 @@ function main () {
 
   //#endregion
 
+
+  //#region GUI
+  const gui = new dat.GUI( { width: 200 } );
+
+  gui.add( configs, "planeSize", 100, 500, 50 ).onChange( () => plane.scale.set( configs.planeSize, configs.planeSize, 0 ) );
+  gui.add( configs, "lightIntensity", 0.1, 1, 0.1 ).onChange( () => light.intensity = configs.lightIntensity );
+  //#endregion
 
   //#region Main loop and events
   // On window resize
