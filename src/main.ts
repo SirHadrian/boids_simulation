@@ -100,16 +100,13 @@ class LineDirection {
 
 class Boid extends Mesh {
 
-  constructor( geometry: SphereGeometry, material: MeshStandardMaterial, velocity: number, scene: Scene ) {
+  constructor( geometry: SphereGeometry, material: MeshStandardMaterial, velocity: number ) {
     super( geometry, material );
 
     this.position.set( 0, 0, 0 );
 
     this.userData.velocity = new Vector3().randomDirection().setZ( 0 );
     this.userData.velocity.multiplyScalar( velocity );
-
-    this.userData.line = LineDirection.create( [this.position, this.position.clone().add( this.userData.velocity ).multiplyScalar( 20 )] );
-    scene.add( this.userData.line );
   }
 
 }
@@ -174,19 +171,29 @@ function main () {
         color: Math.random() * 0xffffff,
       } ),
       configs.boidVelocity,
-      scene
     );
     balls.add( boid );
   }
 
   scene.add( balls );
 
+  const lines = new Group();
+  scene.add( lines );
+
   const animateBalls = () => {
+
+    lines.remove( ...lines.children );
+
     if ( balls.children.length == 0 ) return;
 
     balls.children.forEach( ( boid ) => {
-      boid.position.add( boid.userData.velocity );
-      boid.userData.line.position.add( boid.userData.velocity );
+      lines.add(
+        LineDirection.create( [
+          boid.position,
+          boid.position.clone().add( boid.userData.velocity.clone().multiplyScalar(10) )
+        ] )
+      );
+      boid.position.add( boid.userData.velocity);
     } );
 
     const negEdge = -1 * ( configs.planeSize / 2 );
@@ -199,22 +206,18 @@ function main () {
       // x col
       if ( boid.position.x < negEdge ) {
         boid.position.x += offset;
-        boid.userData.line.position.x += offset;
         boid.userData.velocity.x *= -1;
       } else if ( boid.position.x > posEdge ) {
         boid.position.x -= offset;
-        boid.userData.line.position.x -= offset;
         boid.userData.velocity.x *= -1;
       }
 
       // y col
       if ( boid.position.y < negEdge ) {
         boid.position.y += offset;
-        boid.userData.line.position.y += offset;
         boid.userData.velocity.y *= -1;
       } else if ( boid.position.y > posEdge ) {
         boid.position.y -= offset;
-        boid.userData.line.position.y -= offset;
         boid.userData.velocity.y *= -1;
       }
     } );
