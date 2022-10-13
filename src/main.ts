@@ -17,7 +17,6 @@ import {
   Line,
   BufferGeometry,
   LineBasicMaterial,
-  Sphere,
 } from 'three';
 import * as dat from 'dat.gui'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
@@ -152,9 +151,6 @@ function main () {
     0xffffff,
     configs.lightIntensity
   );
-
-  // Init Direction Lines
-  const line = new LineDirection( scene );
   //#endregion
 
   //#region PlayGround
@@ -191,8 +187,6 @@ function main () {
     balls.children.forEach( ( boid ) => {
       boid.position.add( boid.userData.velocity );
       boid.userData.line.position.add( boid.userData.velocity );
-      //console.log(boid.userData.line.position.add(boid.userData.velocity));
-
     } );
 
     const negEdge = -1 * ( configs.planeSize / 2 );
