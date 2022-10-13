@@ -178,7 +178,7 @@ function main () {
   scene.add( balls );
 
   const lines = new Group();
-  scene.add( lines );
+  //scene.add( lines );
 
   const animateBalls = () => {
 
