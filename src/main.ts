@@ -14,6 +14,10 @@ import {
   DoubleSide,
   Vector3,
   Group,
+  Line,
+  BufferGeometry,
+  LineBasicMaterial,
+  Sphere,
 } from 'three';
 import * as dat from 'dat.gui'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
@@ -41,6 +45,7 @@ class CameraSetup extends PerspectiveCamera {
     super( fov, aspectRatio, nearDistance, farDistance );
 
     this.position.set( 0, 0, 200 );
+    this.lookAt( 0, 0, 0 );
   }
 }
 
@@ -77,21 +82,53 @@ class LightSetup extends DirectionalLight {
 }
 
 
+class LineDirection {
+
+  constructor() {
+
+  }
+
+  static create ( points: Vector3[] ) {
+    const line = new Line(
+      new BufferGeometry().setFromPoints( points ),
+      new LineBasicMaterial( {
+        color: 0xff00ff
+      } )
+    );
+    return line;
+  }
+}
+
+class Boid extends Mesh {
+
+  constructor( geometry: SphereGeometry, material: MeshStandardMaterial, velocity: number, scene: Scene ) {
+    super( geometry, material );
+
+    this.position.set( 0, 0, 0 );
+
+    this.userData.velocity = new Vector3().randomDirection().setZ( 0 );
+    this.userData.velocity.multiplyScalar( velocity );
+
+    this.userData.line = LineDirection.create( [this.position, this.position.clone().add( this.userData.velocity ).multiplyScalar( 20 )] );
+    scene.add( this.userData.line );
+  }
+
+}
+
+
+
 function main () {
 
   //#region  General Configurations
   const configs = {
-    boidVelocity: 1,
+    boidVelocity: 0.5,
     boidsNumber: 100,
     planeSize: 200,
     lightIntensity: 1,
-    boidSize: 2,
+    boidSize: 1,
   };
 
   const balls = new Group();
-
-
-
   //#endregion
 
   //#region INIT
@@ -115,6 +152,9 @@ function main () {
     0xffffff,
     configs.lightIntensity
   );
+
+  // Init Direction Lines
+  const line = new LineDirection( scene );
   //#endregion
 
   //#region PlayGround
@@ -123,7 +163,7 @@ function main () {
   const plane = new Mesh(
     new PlaneGeometry( configs.planeSize, configs.planeSize ),
     new MeshBasicMaterial( {
-      color: 0xffffff,
+      color: 0x000000,
       side: DoubleSide
     } )
   );
@@ -131,32 +171,29 @@ function main () {
   scene.add( plane );
 
 
-  //scene.add( sphere );
-
-
-
   for ( let i = 0; i < configs.boidsNumber; ++i ) {
-    const sphere: Mesh = new Mesh(
+    const boid = new Boid(
       new SphereGeometry( configs.boidSize, 30, 30 ),
       new MeshStandardMaterial( {
         color: Math.random() * 0xffffff,
-      } )
+      } ),
+      configs.boidVelocity,
+      scene
     );
-    sphere.position.set( 0, 0, 0 );
-
-
-    sphere.userData.velocity = new Vector3().randomDirection().setZ( 0 );
-    sphere.userData.velocity.multiplyScalar( configs.boidVelocity );
-
-    balls.add( sphere );
+    balls.add( boid );
   }
 
-  scene.add(balls);
+  scene.add( balls );
 
   const animateBalls = () => {
     if ( balls.children.length == 0 ) return;
 
-    balls.children.forEach( ( item ) => item.position.add( item.userData.velocity ) );
+    balls.children.forEach( ( boid ) => {
+      boid.position.add( boid.userData.velocity );
+      boid.userData.line.position.add( boid.userData.velocity );
+      //console.log(boid.userData.line.position.add(boid.userData.velocity));
+
+    } );
 
     const negEdge = -1 * ( configs.planeSize / 2 );
     const posEdge = configs.planeSize / 2;
@@ -164,30 +201,31 @@ function main () {
     const offset = 2;
 
 
-    balls.children.forEach( ( item ) => {
+    balls.children.forEach( ( boid ) => {
       // x col
-      if ( item.position.x < negEdge ) {
-        item.position.x += offset;
-        item.userData.velocity.x *= -1;
-      } else if ( item.position.x > posEdge ) {
-        item.position.x -= offset;
-        item.userData.velocity.x *= -1;
+      if ( boid.position.x < negEdge ) {
+        boid.position.x += offset;
+        boid.userData.line.position.x += offset;
+        boid.userData.velocity.x *= -1;
+      } else if ( boid.position.x > posEdge ) {
+        boid.position.x -= offset;
+        boid.userData.line.position.x -= offset;
+        boid.userData.velocity.x *= -1;
       }
 
       // y col
-      if ( item.position.y < negEdge ) {
-        item.position.y += offset;
-        item.userData.velocity.y *= -1;
-      } else if ( item.position.y > posEdge ) {
-        item.position.y -= offset;
-        item.userData.velocity.y *= -1;
+      if ( boid.position.y < negEdge ) {
+        boid.position.y += offset;
+        boid.userData.line.position.y += offset;
+        boid.userData.velocity.y *= -1;
+      } else if ( boid.position.y > posEdge ) {
+        boid.position.y -= offset;
+        boid.userData.line.position.y -= offset;
+        boid.userData.velocity.y *= -1;
       }
     } );
   }
-
-
   //#endregion
-
 
   //#region GUI
   const gui = new dat.GUI( { width: 200 } );
