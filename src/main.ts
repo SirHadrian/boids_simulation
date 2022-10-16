@@ -101,14 +101,15 @@ class LineDirection {
 
 class Boid extends Mesh {
 
-  constructor( geometry: SphereGeometry, material: MeshStandardMaterial, velocity: number ) {
+  constructor( geometry: SphereGeometry, material: MeshStandardMaterial, speed: number ) {
     super( geometry, material );
 
     this.position.set( Math.random() * 200 - 100, Math.random() * 200 - 100, 0 );
 
     this.userData.velocity = new Vector3().randomDirection().setZ( 0 );
-    this.userData.velocity.multiplyScalar( velocity );
 
+    this.userData.acceleration = new Vector3().randomDirection().setZ( 0 );
+    this.userData.acceleration.multiplyScalar( speed );
   }
 }
 
@@ -170,7 +171,7 @@ class Simualtion {
       }
     } );
     steering.divideScalar( boids.children.length );
-    boid.userData.velocity.sub( steering );
+    boid.userData.acceleration.sub( steering );
 
   }
 
@@ -200,7 +201,8 @@ class Simualtion {
           boid.position.clone().add( boid.userData.velocity.clone().multiplyScalar( 20 ) )
         ] )
       );
-      boid.position.add( boid.userData.velocity );
+
+      boid.position.add( boid.userData.velocity.add( boid.userData.acceleration ) );
 
       // x col
       if ( boid.position.x < negEdge ) {
