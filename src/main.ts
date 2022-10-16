@@ -17,6 +17,7 @@ import {
   Line,
   BufferGeometry,
   LineBasicMaterial,
+  Object3D,
 } from 'three';
 import * as dat from 'dat.gui'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
@@ -103,12 +104,12 @@ class Boid extends Mesh {
   constructor( geometry: SphereGeometry, material: MeshStandardMaterial, velocity: number ) {
     super( geometry, material );
 
-    this.position.set( 0, 0, 0 );
+    this.position.set( Math.random() * 200 - 100, Math.random() * 200 - 100, 0 );
 
     this.userData.velocity = new Vector3().randomDirection().setZ( 0 );
     this.userData.velocity.multiplyScalar( velocity );
-  }
 
+  }
 }
 
 
@@ -153,21 +154,33 @@ class Simualtion {
     return plane;
   }
 
+
+  aligment ( boid: Object3D, boids: Group ) {
+    if ( boids.children.length == 0 ) return;
+
+    let steering = new Vector3();
+    let radius = 10;
+
+    boids.children.forEach( ( other ) => {
+
+      let distance = boid.position.distanceTo( other.position );
+
+      if ( boid != other && distance < radius ) {
+        steering.add( other.position );
+      }
+    } );
+    steering.divideScalar( boids.children.length );
+    boid.userData.velocity.sub( steering );
+
+  }
+
+
   animateBalls () {
 
+    // Delete lines from scene
     this.#lines.remove( ...this.#lines.children );
 
     if ( this.boids.children.length == 0 ) return;
-
-    this.boids.children.forEach( ( boid ) => {
-      this.#lines.add(
-        LineDirection.create( [
-          boid.position,
-          boid.position.clone().add( boid.userData.velocity.clone().multiplyScalar( 20 ) )
-        ] )
-      );
-      boid.position.add( boid.userData.velocity );
-    } );
 
     const negEdge = -1 * ( this.#configs.planeSize / 2 );
     const posEdge = this.#configs.planeSize / 2;
@@ -176,6 +189,19 @@ class Simualtion {
 
 
     this.boids.children.forEach( ( boid ) => {
+
+      // Steering
+      this.aligment( boid, this.#boids );
+
+      // Draw lines
+      this.#lines.add(
+        LineDirection.create( [
+          boid.position,
+          boid.position.clone().add( boid.userData.velocity.clone().multiplyScalar( 20 ) )
+        ] )
+      );
+      boid.position.add( boid.userData.velocity );
+
       // x col
       if ( boid.position.x < negEdge ) {
         boid.position.x += offset;
@@ -200,7 +226,7 @@ class Simualtion {
 
     for ( let i = 0; i < this.#configs.boidsNumber; ++i ) {
       const boid = new Boid(
-        new SphereGeometry( this.#configs.boidSize, 30, 30 ),
+        new SphereGeometry( this.#configs.boidSize, 10, 10 ),
         new MeshStandardMaterial( {
           color: Math.random() * 0xffffff,
         } ),
