@@ -106,10 +106,10 @@ class Boid extends Mesh {
 
     this.position.set( Math.random() * 200 - 100, Math.random() * 200 - 100, 0 );
 
-    this.userData.velocity = new Vector3().randomDirection().setZ( 0 );
+    this.userData.velocity = new Vector3().randomDirection().setZ( 0 ).multiplyScalar( speed );
 
-    this.userData.acceleration = new Vector3().randomDirection().setZ( 0 );
-    this.userData.acceleration.multiplyScalar( speed );
+    this.userData.acceleration = new Vector3( 0, 0, 0 );
+
   }
 }
 
@@ -120,8 +120,8 @@ class Simualtion {
   #lines: Group;
 
   #configs = {
-    boidVelocity: 0.5,
-    boidsNumber: 100,
+    boidVelocity: 1,
+    boidsNumber: 30,
     planeSize: 200,
     lightIntensity: 1,
     boidSize: 1,
@@ -160,19 +160,21 @@ class Simualtion {
     if ( boids.children.length == 0 ) return;
 
     let steering = new Vector3();
-    let radius = 10;
-
+    let radius = 20;
+    let total = 0;
     boids.children.forEach( ( other ) => {
 
       let distance = boid.position.distanceTo( other.position );
 
       if ( boid != other && distance < radius ) {
-        steering.add( other.position );
+        steering.add( other.userData.velocity );
+        total++;
       }
     } );
-    steering.divideScalar( boids.children.length );
-    boid.userData.acceleration.sub( steering );
+    steering.divideScalar( total );
+    steering.sub( boid.userData.velocity );
 
+    return steering;
   }
 
 
@@ -188,11 +190,10 @@ class Simualtion {
 
     const offset = 2;
 
-
     this.boids.children.forEach( ( boid ) => {
 
-      // Steering
-      this.aligment( boid, this.#boids );
+      const aligment = this.aligment( boid, this.#boids );
+      boid.userData.acceleration = aligment;
 
       // Draw lines
       this.#lines.add(
