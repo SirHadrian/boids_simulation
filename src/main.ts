@@ -120,11 +120,12 @@ class Simualtion {
   #lines: Group;
 
   #configs = {
-    boidVelocity: 1,
+    initialBoidVelocity: 1,
     boidsNumber: 50,
     planeSize: 200,
     lightIntensity: 1,
     boidSize: 1,
+    boidSpeed: 0.9,
   }
 
   constructor() {
@@ -157,12 +158,13 @@ class Simualtion {
 
 
   aligment ( boid: Object3D, boids: Group ) {
+
     if ( boids.children.length == 0 ) return;
 
     let steering = new Vector3( 0, 0, 0 );
-    let radius = 5;
+    let radius = 10;
     let total = 0;
-    const force = 0.1;
+    const force = 0.05;
 
     boids.children.forEach( ( other ) => {
 
@@ -174,6 +176,7 @@ class Simualtion {
       }
     } );
     steering.divideScalar( total );
+    steering.normalize();
     steering.sub( boid.userData.velocity );
     steering.multiplyScalar( force );
     boid.userData.acceleration = steering;
@@ -208,7 +211,7 @@ class Simualtion {
 
     this.boids.children.forEach( ( boid ) => {
 
-      boid.position.add( boid.userData.velocity.add( boid.userData.acceleration ) );
+      boid.position.add( boid.userData.velocity.add( boid.userData.acceleration ).multiplyScalar(this.#configs.boidSpeed));
 
       this.aligment( boid, this.#boids );
 
@@ -234,7 +237,7 @@ class Simualtion {
         new MeshStandardMaterial( {
           color: Math.random() * 0xffffff,
         } ),
-        this.#configs.boidVelocity,
+        this.#configs.initialBoidVelocity,
       );
       this.#boids.add( boid );
     }
