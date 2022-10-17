@@ -120,13 +120,14 @@ class Simualtion {
   #lines: Group;
 
   #configs = {
-    initialBoidVelocity: 1,
-    boidsNumber: 50,
-    planeSize: 200,
-    lightIntensity: 1,
-    boidSize: 1,
-    boidSpeed: 1,
-    aligmentForce: 0.05,
+    initial_boid_velocity: 1,
+    boids_number: 50,
+    plane_size: 200,
+    light_intensity: 1,
+    boid_size: 1,
+    boid_speed: 1,
+    aligment_force: 0.05,
+    boid_perception_radius: 10,
   }
 
   constructor() {
@@ -147,7 +148,7 @@ class Simualtion {
 
   create_plane () {
     const plane = new Mesh(
-      new PlaneGeometry( this.#configs.planeSize, this.#configs.planeSize ),
+      new PlaneGeometry( this.#configs.plane_size, this.#configs.plane_size ),
       new MeshBasicMaterial( {
         color: 0x000000,
         side: DoubleSide
@@ -163,14 +164,13 @@ class Simualtion {
     if ( boids.children.length == 0 ) return;
 
     let steering = new Vector3( 0, 0, 0 );
-    let radius = 10;
     let total = 0;
 
     boids.children.forEach( ( other ) => {
 
       let distance = boid.position.distanceTo( other.position );
 
-      if ( distance < radius ) {
+      if ( distance < this.#configs.boid_perception_radius ) {
         steering.add( other.userData.velocity );
         total++;
       }
@@ -178,7 +178,7 @@ class Simualtion {
     steering.divideScalar( total );
     steering.normalize();
     steering.sub( boid.userData.velocity );
-    steering.multiplyScalar( this.#configs.aligmentForce );
+    steering.multiplyScalar( this.#configs.aligment_force );
     boid.userData.acceleration = steering;
   }
 
@@ -211,7 +211,7 @@ class Simualtion {
 
     this.boids.children.forEach( ( boid ) => {
 
-      boid.position.add( boid.userData.velocity.add( boid.userData.acceleration ).multiplyScalar( this.#configs.boidSpeed ) );
+      boid.position.add( boid.userData.velocity.add( boid.userData.acceleration ).multiplyScalar( this.#configs.boid_speed ) );
 
       this.aligment( boid, this.#boids );
 
@@ -231,13 +231,13 @@ class Simualtion {
 
   #create_boids () {
 
-    for ( let i = 0; i < this.#configs.boidsNumber; ++i ) {
+    for ( let i = 0; i < this.#configs.boids_number; ++i ) {
       const boid = new Boid(
-        new SphereGeometry( this.#configs.boidSize, 10, 10 ),
+        new SphereGeometry( this.#configs.boid_size, 10, 10 ),
         new MeshStandardMaterial( {
           color: Math.random() * 0xffffff,
         } ),
-        this.#configs.initialBoidVelocity,
+        this.#configs.initial_boid_velocity,
       );
       this.#boids.add( boid );
     }
@@ -285,8 +285,8 @@ function main () {
 
   //#region GUI
   // const gui = new dat.GUI( { width: 200 } );
-  // gui.add( configs, "planeSize", 100, 500, 50 ).onChange( () => plane.scale.set( configs.planeSize, configs.planeSize, 0 ) );
-  // gui.add( configs, "lightIntensity", 0.1, 1, 0.1 ).onChange( () => light.intensity = configs.lightIntensity );
+  // gui.add( configs, "plane_size", 100, 500, 50 ).onChange( () => plane.scale.set( configs.plane_size, configs.plane_size, 0 ) );
+  // gui.add( configs, "light_intensity", 0.1, 1, 0.1 ).onChange( () => light.intensity = configs.light_intensity );
   //#endregion
 
 
