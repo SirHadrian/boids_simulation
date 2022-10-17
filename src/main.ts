@@ -159,16 +159,16 @@ class Simualtion {
   aligment ( boid: Object3D, boids: Group ) {
     if ( boids.children.length == 0 ) return;
 
-    let steering = new Vector3();
-    let radius = 20;
+    let steering = new Vector3( 0, 0, 0 );
+    let radius = 5;
     let total = 0;
-    const force = 1;
+    const force = 0.1;
 
     boids.children.forEach( ( other ) => {
 
       let distance = boid.position.distanceTo( other.position );
 
-      if ( boid != other && distance < radius ) {
+      if ( distance < radius ) {
         steering.add( other.userData.velocity );
         total++;
       }
@@ -210,7 +210,7 @@ class Simualtion {
 
       boid.position.add( boid.userData.velocity.add( boid.userData.acceleration ) );
 
-      //this.aligment( boid, this.#boids );
+      this.aligment( boid, this.#boids );
 
       this.checkEdges( boid );
 
