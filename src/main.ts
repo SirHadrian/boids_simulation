@@ -118,6 +118,7 @@ class Simualtion {
 
   #boids: Group;
   #lines: Group;
+  #plane: Mesh;
 
   #configs = {
     initial_boid_velocity: 1,
@@ -138,6 +139,11 @@ class Simualtion {
     this.#lines = new Group();
 
     this.#create_boids();
+    this.#plane = this.#create_plane();
+  }
+
+  get plane () {
+    return this.#plane;
   }
 
   get boids () {
@@ -148,8 +154,12 @@ class Simualtion {
     return this.#lines;
   }
 
+  get configs () {
+    return this.#configs;
+  }
 
-  create_plane () {
+
+  #create_plane () {
     const plane = new Mesh(
       new PlaneGeometry( this.#configs.plane_size, this.#configs.plane_size ),
       new MeshBasicMaterial( {
@@ -315,6 +325,15 @@ class Simualtion {
       this.#boids.add( boid );
     }
   }
+
+  recreate_boids () {
+
+    if ( this.#boids.children.length == 0 ) return;
+
+    this.#boids.remove( ...this.#boids.children );
+
+    this.#create_boids();
+  }
 }
 
 function main () {
@@ -350,16 +369,19 @@ function main () {
   const simulation = new Simualtion();
 
   scene.add( simulation.boids );
-  scene.add( simulation.create_plane() );
   //scene.add( simulation.lines );
 
   //#endregion
 
 
   //#region GUI
-  // const gui = new dat.GUI( { width: 200 } );
-  // gui.add( configs, "plane_size", 100, 500, 50 ).onChange( () => plane.scale.set( configs.plane_size, configs.plane_size, 0 ) );
-  // gui.add( configs, "light_intensity", 0.1, 1, 0.1 ).onChange( () => light.intensity = configs.light_intensity );
+  const gui = new dat.GUI( { width: 200 } );
+
+  gui.add( simulation.configs, "plane_size", 100, 500, 50 ).onChange( () =>
+    simulation.plane.scale.set( simulation.configs.plane_size, simulation.configs.plane_size, 0 )
+  );
+  gui.add( simulation.configs, "boids_number", 10, 100, 10 ).onChange( () => simulation.recreate_boids() );
+
   //#endregion
 
 
