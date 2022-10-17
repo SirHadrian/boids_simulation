@@ -184,21 +184,21 @@ class Simualtion {
 
   checkEdges ( boid: Object3D ) {
 
-    const width = 100;
-    const height = 100;
+    const width = this.#configs.plane_size / 2;
+    const height = this.#configs.plane_size / 2;
 
     // x col
-    if ( boid.position.x < -100 ) {
+    if ( boid.position.x < -width ) {
       boid.position.x = width;
     } else if ( boid.position.x > width ) {
-      boid.position.x = -100;
+      boid.position.x = -width;
     }
 
     // y col
-    if ( boid.position.y < -100 ) {
+    if ( boid.position.y < -height ) {
       boid.position.y = height;
     } else if ( boid.position.y > height ) {
-      boid.position.y = -100;
+      boid.position.y = -height;
     }
   }
 
