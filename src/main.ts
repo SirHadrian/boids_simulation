@@ -126,8 +126,9 @@ class Simualtion {
     light_intensity: 1,
     boid_size: 1,
     boid_speed: 1,
-    aligment_force: 0.05,
-    boid_perception_radius: 20,
+    aligment_force: 1,
+    cohesion_force: 1,
+    boid_perception_radius: 10,
   }
 
 
@@ -180,7 +181,7 @@ class Simualtion {
 
     steering.divideScalar( total );
     steering.sub( boid.position );
-    steering.multiplyScalar( this.#configs.aligment_force );
+    steering.multiplyScalar( this.#configs.cohesion_force );
 
     boid.userData.acceleration.add( steering );
   }
@@ -208,7 +209,7 @@ class Simualtion {
     steering.sub( boid.userData.velocity );
     steering.multiplyScalar( this.#configs.aligment_force );
 
-    boid.userData.acceleration.add(steering);
+    boid.userData.acceleration.add( steering );
   }
 
 
@@ -242,10 +243,20 @@ class Simualtion {
 
     this.boids.children.forEach( ( boid ) => {
 
-      boid.position.add( boid.userData.velocity.add( boid.userData.acceleration ).multiplyScalar( this.#configs.boid_speed ).normalize() );
+      boid.position.add(
+        boid.userData.velocity
+          .add( boid.userData.acceleration )
+          .normalize()
+          .multiplyScalar( this.#configs.boid_speed )
+      );
 
-      //this.aligment( boid, this.#boids );
+      // Reset acceleration
+      boid.userData.acceleration.multiplyScalar( 0 );
+
+      this.aligment( boid, this.#boids );
       this.cohesion( boid, this.#boids );
+
+
 
       this.checkEdges( boid );
 
