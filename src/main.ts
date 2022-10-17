@@ -127,8 +127,9 @@ class Simualtion {
     boid_size: 1,
     boid_speed: 1,
     aligment_force: 0.05,
-    boid_perception_radius: 10,
+    boid_perception_radius: 20,
   }
+
 
   constructor() {
 
@@ -146,6 +147,7 @@ class Simualtion {
     return this.#lines;
   }
 
+
   create_plane () {
     const plane = new Mesh(
       new PlaneGeometry( this.#configs.plane_size, this.#configs.plane_size ),
@@ -159,9 +161,35 @@ class Simualtion {
   }
 
 
+  cohesion ( boid: Object3D, boids: Group ) {
+
+    if ( boids.children.length <= 1 ) return;
+
+    let steering = new Vector3( 0, 0, 0 );
+    let total = 0;
+
+    boids.children.forEach( ( other ) => {
+
+      let distance = boid.position.distanceTo( other.position );
+
+      if ( distance < this.#configs.boid_perception_radius ) {
+        steering.add( other.position );
+        total++;
+      }
+    } );
+
+    steering.divideScalar( total );
+    steering.sub( boid.position );
+    steering.multiplyScalar( this.#configs.aligment_force );
+    
+    boid.userData.velocity.normalize();
+    boid.userData.acceleration = steering;
+  }
+
+
   aligment ( boid: Object3D, boids: Group ) {
 
-    if ( boids.children.length == 0 ) return;
+    if ( boids.children.length <= 1 ) return;
 
     let steering = new Vector3( 0, 0, 0 );
     let total = 0;
@@ -175,12 +203,14 @@ class Simualtion {
         total++;
       }
     } );
+
     steering.divideScalar( total );
     steering.normalize();
     steering.sub( boid.userData.velocity );
     steering.multiplyScalar( this.#configs.aligment_force );
     boid.userData.acceleration = steering;
   }
+
 
   checkEdges ( boid: Object3D ) {
 
@@ -202,6 +232,7 @@ class Simualtion {
     }
   }
 
+
   animateBalls () {
 
     // Delete lines from scene
@@ -213,21 +244,22 @@ class Simualtion {
 
       boid.position.add( boid.userData.velocity.add( boid.userData.acceleration ).multiplyScalar( this.#configs.boid_speed ) );
 
-      this.aligment( boid, this.#boids );
+      //this.aligment( boid, this.#boids );
+      this.cohesion( boid, this.#boids );
 
       this.checkEdges( boid );
-
 
 
       // Draw lines
       this.#lines.add(
         LineDirection.create( [
           boid.position,
-          boid.position.clone().add( boid.userData.velocity.clone().multiplyScalar( 20 ) )
+          boid.position.clone().add( boid.userData.velocity.clone().multiplyScalar( 5 ) )
         ] )
       );
     } );
   }
+
 
   #create_boids () {
 
