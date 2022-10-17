@@ -1,8 +1,6 @@
 import {
   Scene,
-  PlaneGeometry,
   Mesh,
-  MeshBasicMaterial,
   WebGLRenderer,
   TextureLoader,
   PerspectiveCamera,
@@ -11,7 +9,6 @@ import {
   ColorRepresentation,
   SphereGeometry,
   MeshStandardMaterial,
-  DoubleSide,
   Vector3,
   Group,
   Line,
@@ -118,7 +115,6 @@ class Simualtion {
 
   #boids: Group;
   #lines: Group;
-  #plane: Mesh;
 
   #configs = {
     initial_boid_velocity: 1,
@@ -142,11 +138,6 @@ class Simualtion {
     this.#lines = new Group();
 
     this.#create_boids();
-    this.#plane = this.#create_plane();
-  }
-
-  get plane () {
-    return this.#plane;
   }
 
   get boids () {
@@ -159,19 +150,6 @@ class Simualtion {
 
   get configs () {
     return this.#configs;
-  }
-
-
-  #create_plane (): Mesh {
-    const plane = new Mesh(
-      new PlaneGeometry( this.#configs.plane_size, this.#configs.plane_size ),
-      new MeshBasicMaterial( {
-        color: 0x000000,
-        side: DoubleSide
-      } )
-    );
-    plane.position.set( 0, 0, 0 );
-    return plane;
   }
 
 
@@ -377,9 +355,7 @@ function main () {
   //#region GUI
   const gui = new dat.GUI( { width: 300 } );
 
-  gui.add( simulation.configs, "plane_size", 100, 500, 50 ).onChange( () => {
-    simulation.plane.scale.set( simulation.configs.plane_size, simulation.configs.plane_size, 0 )
-  } );
+  gui.add( simulation.configs, "plane_size", 100, 500, 50 );
   gui.add( simulation.configs, "boids_number", 10, 100, 10 ).onChange( () => simulation.recreate_boids() );
   gui.add( simulation.configs, "boid_size", 0.1, 2, 0.1 ).onChange( () => simulation.recreate_boids() );
   gui.add( simulation.configs, "boid_speed", 0.1, 2, 0.1 );
