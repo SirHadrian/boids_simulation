@@ -162,6 +162,35 @@ class Simualtion {
   }
 
 
+  separation ( boid: Object3D, boids: Group ) {
+
+    if ( boids.children.length <= 1 ) return;
+
+    let steering = new Vector3( 0, 0, 0 );
+    let total = 0;
+
+    boids.children.forEach( ( other ) => {
+
+      let distance = boid.position.distanceTo( other.position );
+
+      if ( distance < this.#configs.boid_perception_radius ) {
+
+        let diff = new Vector3().subVectors( boid.position, other.position );
+        diff.divideScalar( this.#configs.boid_perception_radius );
+
+        steering.add( diff );
+        total++;
+      }
+    } );
+
+    steering.divideScalar( total );
+
+    steering.multiplyScalar( this.#configs.cohesion_force );
+
+    boid.userData.acceleration.add( steering );
+  }
+
+
   cohesion ( boid: Object3D, boids: Group ) {
 
     if ( boids.children.length <= 1 ) return;
@@ -253,8 +282,9 @@ class Simualtion {
       // Reset acceleration
       boid.userData.acceleration.multiplyScalar( 0 );
 
-      this.aligment( boid, this.#boids );
-      this.cohesion( boid, this.#boids );
+      //this.aligment( boid, this.#boids );
+      //this.cohesion( boid, this.#boids );
+      //this.separation( boid, this.#boids );
 
 
 
