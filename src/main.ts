@@ -27,9 +27,6 @@ class SceneSetup extends Scene {
 
     super();
 
-    const backgroundLoader = new TextureLoader();
-    const texture = backgroundLoader.load( './assets/back.jpg' );
-    this.background = texture;
   }
 
 }
@@ -96,14 +93,15 @@ class LineDirection {
   }
 }
 
+
 class Boid extends Mesh {
 
-  constructor( geometry: SphereGeometry, material: MeshStandardMaterial, speed: number ) {
+  constructor( geometry: SphereGeometry, material: MeshStandardMaterial ) {
     super( geometry, material );
 
     this.position.set( Math.random() * 200 - 100, Math.random() * 200 - 100, 0 );
 
-    this.userData.velocity = new Vector3().randomDirection().setZ( 0 ).multiplyScalar( speed );
+    this.userData.velocity = new Vector3().randomDirection().setZ( 0 );
 
     this.userData.acceleration = new Vector3( 0, 0, 0 );
 
@@ -117,12 +115,11 @@ class Simualtion {
   #lines: Group;
 
   #configs = {
-    initial_boid_velocity: 1,
     boids_number: 50,
     plane_size: 200,
     light_intensity: 1,
-    boid_size: 1,
-    boid_speed: 1,
+    boid_size: 0.5,
+    boid_speed: 0.5,
     aligment_force: 0.1,
     cohesion_force: 0.1,
     separation_force: 1,
@@ -278,14 +275,6 @@ class Simualtion {
       this.separation( boid, this.#boids );
 
       this.checkEdges( boid );
-
-      // Debug lines
-      // this.#lines.add(
-      //   LineDirection.create( [
-      //     boid.position,
-      //     boid.position.clone().add( boid.userData.velocity.clone().multiplyScalar( 5 ) )
-      //   ] )
-      // );
     } );
   }
 
@@ -298,7 +287,6 @@ class Simualtion {
         new MeshStandardMaterial( {
           color: Math.random() * 0xffffff,
         } ),
-        this.#configs.initial_boid_velocity,
       );
       this.#boids.add( boid );
     }
