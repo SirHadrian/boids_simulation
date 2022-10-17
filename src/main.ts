@@ -299,18 +299,15 @@ class Simualtion {
       this.cohesion( boid, this.#boids );
       this.separation( boid, this.#boids );
 
-
-
       this.checkEdges( boid );
 
-
-      // Draw lines
-      this.#lines.add(
-        LineDirection.create( [
-          boid.position,
-          boid.position.clone().add( boid.userData.velocity.clone().multiplyScalar( 5 ) )
-        ] )
-      );
+      // Debug lines
+      // this.#lines.add(
+      //   LineDirection.create( [
+      //     boid.position,
+      //     boid.position.clone().add( boid.userData.velocity.clone().multiplyScalar( 5 ) )
+      //   ] )
+      // );
     } );
   }
 
