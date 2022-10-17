@@ -159,7 +159,7 @@ class Simualtion {
   }
 
 
-  #create_plane () {
+  #create_plane (): Mesh {
     const plane = new Mesh(
       new PlaneGeometry( this.#configs.plane_size, this.#configs.plane_size ),
       new MeshBasicMaterial( {
@@ -377,10 +377,13 @@ function main () {
   //#region GUI
   const gui = new dat.GUI( { width: 200 } );
 
-  gui.add( simulation.configs, "plane_size", 100, 500, 50 ).onChange( () =>
+  gui.add( simulation.configs, "plane_size", 100, 500, 50 ).onChange( () => {
     simulation.plane.scale.set( simulation.configs.plane_size, simulation.configs.plane_size, 0 )
-  );
+  } );
   gui.add( simulation.configs, "boids_number", 10, 100, 10 ).onChange( () => simulation.recreate_boids() );
+  gui.add( simulation.configs, "boid_size", 0.1, 2, 0.1 ).onChange( () => simulation.recreate_boids() );
+  gui.add( simulation.configs, "boid_speed", 0.1, 2, 0.1 );
+
 
   //#endregion
 
