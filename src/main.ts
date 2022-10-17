@@ -127,9 +127,12 @@ class Simualtion {
     light_intensity: 1,
     boid_size: 1,
     boid_speed: 1,
-    aligment_force: 1,
-    cohesion_force: 1,
-    boid_perception_radius: 10,
+    aligment_force: 0.1,
+    cohesion_force: 0.1,
+    separation_force: 1,
+    aligment_radius: 10,
+    cohesion_radius: 10,
+    separation_radius: 10,
   }
 
 
@@ -183,10 +186,10 @@ class Simualtion {
 
       let distance = boid.position.distanceTo( other.position );
 
-      if ( distance < this.#configs.boid_perception_radius ) {
+      if ( distance < this.#configs.separation_radius ) {
 
         let diff = new Vector3().subVectors( boid.position, other.position );
-        diff.divideScalar( this.#configs.boid_perception_radius );
+        diff.divideScalar( this.#configs.separation_radius );
 
         steering.add( diff );
         total++;
@@ -195,7 +198,7 @@ class Simualtion {
 
     steering.divideScalar( total );
 
-    steering.multiplyScalar( this.#configs.cohesion_force );
+    steering.multiplyScalar( this.#configs.separation_force );
 
     boid.userData.acceleration.add( steering );
   }
@@ -212,7 +215,7 @@ class Simualtion {
 
       let distance = boid.position.distanceTo( other.position );
 
-      if ( distance < this.#configs.boid_perception_radius ) {
+      if ( distance < this.#configs.cohesion_radius ) {
         steering.add( other.position );
         total++;
       }
@@ -237,7 +240,7 @@ class Simualtion {
 
       let distance = boid.position.distanceTo( other.position );
 
-      if ( distance < this.#configs.boid_perception_radius ) {
+      if ( distance < this.#configs.aligment_radius ) {
         steering.add( other.userData.velocity );
         total++;
       }
@@ -292,9 +295,9 @@ class Simualtion {
       // Reset acceleration
       boid.userData.acceleration.multiplyScalar( 0 );
 
-      //this.aligment( boid, this.#boids );
-      //this.cohesion( boid, this.#boids );
-      //this.separation( boid, this.#boids );
+      this.aligment( boid, this.#boids );
+      this.cohesion( boid, this.#boids );
+      this.separation( boid, this.#boids );
 
 
 
@@ -375,7 +378,7 @@ function main () {
 
 
   //#region GUI
-  const gui = new dat.GUI( { width: 200 } );
+  const gui = new dat.GUI( { width: 300 } );
 
   gui.add( simulation.configs, "plane_size", 100, 500, 50 ).onChange( () => {
     simulation.plane.scale.set( simulation.configs.plane_size, simulation.configs.plane_size, 0 )
@@ -383,6 +386,14 @@ function main () {
   gui.add( simulation.configs, "boids_number", 10, 100, 10 ).onChange( () => simulation.recreate_boids() );
   gui.add( simulation.configs, "boid_size", 0.1, 2, 0.1 ).onChange( () => simulation.recreate_boids() );
   gui.add( simulation.configs, "boid_speed", 0.1, 2, 0.1 );
+
+  gui.add( simulation.configs, "aligment_force", 0, 0.5, 0.05 );
+  gui.add( simulation.configs, "cohesion_force", 0, 0.5, 0.05 );
+  gui.add( simulation.configs, "separation_force", 0, 1.5, 0.1 );
+
+  gui.add( simulation.configs, "aligment_radius", 5, 50, 5 );
+  gui.add( simulation.configs, "cohesion_radius", 5, 50, 5 );
+  gui.add( simulation.configs, "separation_radius", 5, 50, 5 );
 
 
   //#endregion
