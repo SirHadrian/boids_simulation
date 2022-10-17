@@ -181,9 +181,8 @@ class Simualtion {
     steering.divideScalar( total );
     steering.sub( boid.position );
     steering.multiplyScalar( this.#configs.aligment_force );
-    
-    boid.userData.velocity.normalize();
-    boid.userData.acceleration = steering;
+
+    boid.userData.acceleration.add( steering );
   }
 
 
@@ -208,7 +207,8 @@ class Simualtion {
     steering.normalize();
     steering.sub( boid.userData.velocity );
     steering.multiplyScalar( this.#configs.aligment_force );
-    boid.userData.acceleration = steering;
+
+    boid.userData.acceleration.add(steering);
   }
 
 
@@ -242,7 +242,7 @@ class Simualtion {
 
     this.boids.children.forEach( ( boid ) => {
 
-      boid.position.add( boid.userData.velocity.add( boid.userData.acceleration ).multiplyScalar( this.#configs.boid_speed ) );
+      boid.position.add( boid.userData.velocity.add( boid.userData.acceleration ).multiplyScalar( this.#configs.boid_speed ).normalize() );
 
       //this.aligment( boid, this.#boids );
       this.cohesion( boid, this.#boids );
