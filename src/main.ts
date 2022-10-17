@@ -125,7 +125,8 @@ class Simualtion {
     planeSize: 200,
     lightIntensity: 1,
     boidSize: 1,
-    boidSpeed: 0.9,
+    boidSpeed: 1,
+    aligmentForce: 0.05,
   }
 
   constructor() {
@@ -164,7 +165,6 @@ class Simualtion {
     let steering = new Vector3( 0, 0, 0 );
     let radius = 10;
     let total = 0;
-    const force = 0.05;
 
     boids.children.forEach( ( other ) => {
 
@@ -178,7 +178,7 @@ class Simualtion {
     steering.divideScalar( total );
     steering.normalize();
     steering.sub( boid.userData.velocity );
-    steering.multiplyScalar( force );
+    steering.multiplyScalar( this.#configs.aligmentForce );
     boid.userData.acceleration = steering;
   }
 
@@ -211,7 +211,7 @@ class Simualtion {
 
     this.boids.children.forEach( ( boid ) => {
 
-      boid.position.add( boid.userData.velocity.add( boid.userData.acceleration ).multiplyScalar(this.#configs.boidSpeed));
+      boid.position.add( boid.userData.velocity.add( boid.userData.acceleration ).multiplyScalar( this.#configs.boidSpeed ) );
 
       this.aligment( boid, this.#boids );
 
