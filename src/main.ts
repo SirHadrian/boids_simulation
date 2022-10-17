@@ -121,7 +121,7 @@ class Simualtion {
 
   #configs = {
     boidVelocity: 1,
-    boidsNumber: 30,
+    boidsNumber: 50,
     planeSize: 200,
     lightIntensity: 1,
     boidSize: 1,
@@ -162,6 +162,8 @@ class Simualtion {
     let steering = new Vector3();
     let radius = 20;
     let total = 0;
+    const force = 1;
+
     boids.children.forEach( ( other ) => {
 
       let distance = boid.position.distanceTo( other.position );
@@ -173,10 +175,29 @@ class Simualtion {
     } );
     steering.divideScalar( total );
     steering.sub( boid.userData.velocity );
-
-    return steering;
+    steering.multiplyScalar( force );
+    boid.userData.acceleration = steering;
   }
 
+  checkEdges ( boid: Object3D ) {
+
+    const width = 100;
+    const height = 100;
+
+    // x col
+    if ( boid.position.x < -100 ) {
+      boid.position.x = width;
+    } else if ( boid.position.x > width ) {
+      boid.position.x = -100;
+    }
+
+    // y col
+    if ( boid.position.y < -100 ) {
+      boid.position.y = height;
+    } else if ( boid.position.y > height ) {
+      boid.position.y = -100;
+    }
+  }
 
   animateBalls () {
 
@@ -185,15 +206,15 @@ class Simualtion {
 
     if ( this.boids.children.length == 0 ) return;
 
-    const negEdge = -1 * ( this.#configs.planeSize / 2 );
-    const posEdge = this.#configs.planeSize / 2;
-
-    const offset = 2;
-
     this.boids.children.forEach( ( boid ) => {
 
-      const aligment = this.aligment( boid, this.#boids );
-      boid.userData.acceleration = aligment;
+      boid.position.add( boid.userData.velocity.add( boid.userData.acceleration ) );
+
+      //this.aligment( boid, this.#boids );
+
+      this.checkEdges( boid );
+
+
 
       // Draw lines
       this.#lines.add(
@@ -202,26 +223,6 @@ class Simualtion {
           boid.position.clone().add( boid.userData.velocity.clone().multiplyScalar( 20 ) )
         ] )
       );
-
-      boid.position.add( boid.userData.velocity.add( boid.userData.acceleration ) );
-
-      // x col
-      if ( boid.position.x < negEdge ) {
-        boid.position.x += offset;
-        boid.userData.velocity.x *= -1;
-      } else if ( boid.position.x > posEdge ) {
-        boid.position.x -= offset;
-        boid.userData.velocity.x *= -1;
-      }
-
-      // y col
-      if ( boid.position.y < negEdge ) {
-        boid.position.y += offset;
-        boid.userData.velocity.y *= -1;
-      } else if ( boid.position.y > posEdge ) {
-        boid.position.y -= offset;
-        boid.userData.velocity.y *= -1;
-      }
     } );
   }
 
