@@ -2,7 +2,6 @@ import {
   Scene,
   Mesh,
   WebGLRenderer,
-  TextureLoader,
   PerspectiveCamera,
   sRGBEncoding,
   DirectionalLight,
@@ -34,44 +33,44 @@ class SceneSetup extends Scene {
 
 class CameraSetup extends PerspectiveCamera {
 
-  constructor( fov: number, aspectRatio: number, nearDistance: number, farDistance: number ) {
+  constructor(fov: number, aspectRatio: number, nearDistance: number, farDistance: number) {
 
-    super( fov, aspectRatio, nearDistance, farDistance );
+    super(fov, aspectRatio, nearDistance, farDistance);
 
-    this.position.set( 0, 0, 200 );
-    this.lookAt( 0, 0, 0 );
+    this.position.set(0, 0, 200);
+    this.lookAt(0, 0, 0);
   }
 }
 
 
 class RendererSetup extends WebGLRenderer {
 
-  constructor( configs: object, camera: CameraSetup ) {
+  constructor(configs: object, camera: CameraSetup) {
 
-    super( configs );
+    super(configs);
 
-    this.setSize( window.innerWidth, window.innerHeight );
-    this.setPixelRatio( window.devicePixelRatio );
+    this.setSize(window.innerWidth, window.innerHeight);
+    this.setPixelRatio(window.devicePixelRatio);
     this.outputEncoding = sRGBEncoding;
 
     // Inject renderer to DOM
-    const target = document.getElementById( "app" );
-    target?.appendChild( this.domElement );
+    const target = document.getElementById("app");
+    target?.appendChild(this.domElement);
 
     // OrbitControls
-    new OrbitControls( camera, this.domElement );
+    new OrbitControls(camera, this.domElement);
   }
 }
 
 
 class LightSetup extends DirectionalLight {
 
-  constructor( scene: Scene, color: ColorRepresentation, intensity: number ) {
+  constructor(scene: Scene, color: ColorRepresentation, intensity: number) {
 
-    super( color, intensity );
+    super(color, intensity);
 
-    this.position.set( 0, 0, 10 );
-    scene.add( this );
+    this.position.set(0, 0, 10);
+    scene.add(this);
   }
 }
 
@@ -82,12 +81,12 @@ class LineDirection {
 
   }
 
-  static create ( points: Vector3[] ) {
+  static create(points: Vector3[]) {
     const line = new Line(
-      new BufferGeometry().setFromPoints( points ),
-      new LineBasicMaterial( {
+      new BufferGeometry().setFromPoints(points),
+      new LineBasicMaterial({
         color: 0xff00ff
-      } )
+      })
     );
     return line;
   }
@@ -96,14 +95,14 @@ class LineDirection {
 
 class Boid extends Mesh {
 
-  constructor( geometry: SphereGeometry, material: MeshStandardMaterial ) {
-    super( geometry, material );
+  constructor(geometry: SphereGeometry, material: MeshStandardMaterial) {
+    super(geometry, material);
 
-    this.position.set( Math.random() * 200 - 100, Math.random() * 200 - 100, 0 );
+    this.position.set(Math.random() * 200 - 100, Math.random() * 200 - 100, 0);
 
-    this.userData.velocity = new Vector3().randomDirection().setZ( 0 );
+    this.userData.velocity = new Vector3().randomDirection().setZ(0);
 
-    this.userData.acceleration = new Vector3( 0, 0, 0 );
+    this.userData.acceleration = new Vector3(0, 0, 0);
 
   }
 }
@@ -137,172 +136,172 @@ class Simualtion {
     this.#create_boids();
   }
 
-  get boids () {
+  get boids() {
     return this.#boids;
   }
 
-  get lines () {
+  get lines() {
     return this.#lines;
   }
 
-  get configs () {
+  get configs() {
     return this.#configs;
   }
 
 
-  separation ( boid: Object3D, boids: Group ) {
+  separation(boid: Object3D, boids: Group) {
 
-    if ( boids.children.length <= 1 ) return;
+    if (boids.children.length <= 1) return;
 
-    let steering = new Vector3( 0, 0, 0 );
+    let steering = new Vector3(0, 0, 0);
     let total = 0;
 
-    boids.children.forEach( ( other ) => {
+    boids.children.forEach((other) => {
 
-      let distance = boid.position.distanceTo( other.position );
+      let distance = boid.position.distanceTo(other.position);
 
-      if ( distance < this.#configs.separation_radius ) {
+      if (distance < this.#configs.separation_radius) {
 
-        let diff = new Vector3().subVectors( boid.position, other.position );
-        diff.divideScalar( this.#configs.separation_radius );
+        let diff = new Vector3().subVectors(boid.position, other.position);
+        diff.divideScalar(this.#configs.separation_radius);
 
-        steering.add( diff );
+        steering.add(diff);
         total++;
       }
-    } );
+    });
 
-    steering.divideScalar( total );
+    steering.divideScalar(total);
 
-    steering.multiplyScalar( this.#configs.separation_force );
+    steering.multiplyScalar(this.#configs.separation_force);
 
-    boid.userData.acceleration.add( steering );
+    boid.userData.acceleration.add(steering);
   }
 
 
-  cohesion ( boid: Object3D, boids: Group ) {
+  cohesion(boid: Object3D, boids: Group) {
 
-    if ( boids.children.length <= 1 ) return;
+    if (boids.children.length <= 1) return;
 
-    let steering = new Vector3( 0, 0, 0 );
+    let steering = new Vector3(0, 0, 0);
     let total = 0;
 
-    boids.children.forEach( ( other ) => {
+    boids.children.forEach((other) => {
 
-      let distance = boid.position.distanceTo( other.position );
+      let distance = boid.position.distanceTo(other.position);
 
-      if ( distance < this.#configs.cohesion_radius ) {
-        steering.add( other.position );
+      if (distance < this.#configs.cohesion_radius) {
+        steering.add(other.position);
         total++;
       }
-    } );
+    });
 
-    steering.divideScalar( total );
-    steering.sub( boid.position );
-    steering.multiplyScalar( this.#configs.cohesion_force );
+    steering.divideScalar(total);
+    steering.sub(boid.position);
+    steering.multiplyScalar(this.#configs.cohesion_force);
 
-    boid.userData.acceleration.add( steering );
+    boid.userData.acceleration.add(steering);
   }
 
 
-  aligment ( boid: Object3D, boids: Group ) {
+  aligment(boid: Object3D, boids: Group) {
 
-    if ( boids.children.length <= 1 ) return;
+    if (boids.children.length <= 1) return;
 
-    let steering = new Vector3( 0, 0, 0 );
+    let steering = new Vector3(0, 0, 0);
     let total = 0;
 
-    boids.children.forEach( ( other ) => {
+    boids.children.forEach((other) => {
 
-      let distance = boid.position.distanceTo( other.position );
+      let distance = boid.position.distanceTo(other.position);
 
-      if ( distance < this.#configs.aligment_radius ) {
-        steering.add( other.userData.velocity );
+      if (distance < this.#configs.aligment_radius) {
+        steering.add(other.userData.velocity);
         total++;
       }
-    } );
+    });
 
-    steering.divideScalar( total );
+    steering.divideScalar(total);
     steering.normalize();
-    steering.sub( boid.userData.velocity );
-    steering.multiplyScalar( this.#configs.aligment_force );
+    steering.sub(boid.userData.velocity);
+    steering.multiplyScalar(this.#configs.aligment_force);
 
-    boid.userData.acceleration.add( steering );
+    boid.userData.acceleration.add(steering);
   }
 
 
-  checkEdges ( boid: Object3D ) {
+  checkEdges(boid: Object3D) {
 
     const width = this.#configs.plane_size / 2;
     const height = this.#configs.plane_size / 2;
 
     // x col
-    if ( boid.position.x < -width ) {
+    if (boid.position.x < -width) {
       boid.position.x = width;
-    } else if ( boid.position.x > width ) {
+    } else if (boid.position.x > width) {
       boid.position.x = -width;
     }
 
     // y col
-    if ( boid.position.y < -height ) {
+    if (boid.position.y < -height) {
       boid.position.y = height;
-    } else if ( boid.position.y > height ) {
+    } else if (boid.position.y > height) {
       boid.position.y = -height;
     }
   }
 
 
-  animateBalls () {
+  animateBalls() {
 
     // Delete lines from scene
-    this.#lines.remove( ...this.#lines.children );
+    this.#lines.remove(...this.#lines.children);
 
-    if ( this.boids.children.length == 0 ) return;
+    if (this.boids.children.length == 0) return;
 
-    this.boids.children.forEach( ( boid ) => {
+    this.boids.children.forEach((boid) => {
 
       boid.position.add(
         boid.userData.velocity
-          .add( boid.userData.acceleration )
+          .add(boid.userData.acceleration)
           .normalize()
-          .multiplyScalar( this.#configs.boid_speed )
+          .multiplyScalar(this.#configs.boid_speed)
       );
 
       // Reset acceleration
-      boid.userData.acceleration.multiplyScalar( 0 );
+      boid.userData.acceleration.multiplyScalar(0);
 
-      this.aligment( boid, this.#boids );
-      this.cohesion( boid, this.#boids );
-      this.separation( boid, this.#boids );
+      this.aligment(boid, this.#boids);
+      this.cohesion(boid, this.#boids);
+      this.separation(boid, this.#boids);
 
-      this.checkEdges( boid );
-    } );
+      this.checkEdges(boid);
+    });
   }
 
 
-  #create_boids () {
+  #create_boids() {
 
-    for ( let i = 0; i < this.#configs.boids_number; ++i ) {
+    for (let i = 0; i < this.#configs.boids_number; ++i) {
       const boid = new Boid(
-        new SphereGeometry( this.#configs.boid_size, 10, 10 ),
-        new MeshStandardMaterial( {
+        new SphereGeometry(this.#configs.boid_size, 10, 10),
+        new MeshStandardMaterial({
           color: Math.random() * 0xffffff,
-        } ),
+        }),
       );
-      this.#boids.add( boid );
+      this.#boids.add(boid);
     }
   }
 
-  recreate_boids () {
+  recreate_boids() {
 
-    if ( this.#boids.children.length == 0 ) return;
+    if (this.#boids.children.length == 0) return;
 
-    this.#boids.remove( ...this.#boids.children );
+    this.#boids.remove(...this.#boids.children);
 
     this.#create_boids();
   }
 }
 
-function main () {
+function main() {
 
   //#region INIT
   // Create Scene
@@ -317,7 +316,7 @@ function main () {
   );
 
   // Create Renderer
-  const renderer = new RendererSetup( { antialiasing: true }, camera );
+  const renderer = new RendererSetup({ antialiasing: true }, camera);
 
   // Create light source
   const light = new LightSetup(
@@ -325,7 +324,7 @@ function main () {
     0xffffff,
     1
   );
-  scene.add( light );
+  scene.add(light);
   //#endregion
 
 
@@ -334,27 +333,27 @@ function main () {
   // Simualtion
   const simulation = new Simualtion();
 
-  scene.add( simulation.boids );
+  scene.add(simulation.boids);
   //scene.add( simulation.lines );
 
   //#endregion
 
 
   //#region GUI
-  const gui = new dat.GUI( { width: 300 } );
+  const gui = new dat.GUI({ width: 300 });
 
-  gui.add( simulation.configs, "plane_size", 100, 500, 50 );
-  gui.add( simulation.configs, "boids_number", 10, 100, 10 ).onChange( () => simulation.recreate_boids() );
-  gui.add( simulation.configs, "boid_size", 0.1, 2, 0.1 ).onChange( () => simulation.recreate_boids() );
-  gui.add( simulation.configs, "boid_speed", 0.1, 2, 0.1 );
+  gui.add(simulation.configs, "plane_size", 100, 500, 50);
+  gui.add(simulation.configs, "boids_number", 10, 100, 10).onChange(() => simulation.recreate_boids());
+  gui.add(simulation.configs, "boid_size", 0.1, 2, 0.1).onChange(() => simulation.recreate_boids());
+  gui.add(simulation.configs, "boid_speed", 0.1, 2, 0.1);
 
-  gui.add( simulation.configs, "aligment_force", 0, 0.5, 0.05 );
-  gui.add( simulation.configs, "cohesion_force", 0, 0.5, 0.05 );
-  gui.add( simulation.configs, "separation_force", 0, 1.5, 0.1 );
+  gui.add(simulation.configs, "aligment_force", 0, 0.5, 0.05);
+  gui.add(simulation.configs, "cohesion_force", 0, 0.5, 0.05);
+  gui.add(simulation.configs, "separation_force", 0, 1.5, 0.1);
 
-  gui.add( simulation.configs, "aligment_radius", 5, 50, 5 );
-  gui.add( simulation.configs, "cohesion_radius", 5, 50, 5 );
-  gui.add( simulation.configs, "separation_radius", 5, 50, 5 );
+  gui.add(simulation.configs, "aligment_radius", 5, 50, 5);
+  gui.add(simulation.configs, "cohesion_radius", 5, 50, 5);
+  gui.add(simulation.configs, "separation_radius", 5, 50, 5);
 
 
   //#endregion
@@ -366,17 +365,17 @@ function main () {
   const resize = () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize(window.innerWidth, window.innerHeight);
   }
-  window.addEventListener( "resize", resize, false );
+  window.addEventListener("resize", resize, false);
 
   // Animation loop
   const animate = () => {
 
     simulation.animateBalls();
 
-    renderer.render( scene, camera );
-    requestAnimationFrame( animate );
+    renderer.render(scene, camera);
+    requestAnimationFrame(animate);
   }
   animate();
 
