@@ -34,7 +34,7 @@ class CameraSetup extends PerspectiveCamera {
 
         super(fov, aspectRatio, nearDistance, farDistance);
 
-        this.position.set(0, 0, 200);
+        this.position.set(0, 0, 100);
         this.lookAt(0, 0, 0);
     }
 }
@@ -300,7 +300,7 @@ function main() {
     const light = new LightSetup(
         scene,
         0xffffff,
-        1
+        5
     );
     scene.add(light);
     //#endregion
